@@ -1,6 +1,5 @@
 const virtualScrollHelp =
-  "Virtual scrolling optimizes performance by only rendering visible options and a small buffer around them. When enabled, this feature can significantly improve loading and scrolling performance for large lists.</br></br>Important notes:</br>- The layout will be forced to a vertical list format</br>- Option items must be positioned at the root level of the Options List";
-
+  "Virtual scrolling optimizes performance by only rendering visible options and a small buffer around them. When enabled, this feature can significantly improve loading and scrolling performance for large lists.</br></br>Important notes:</br>- The layout will be forced to a vertical list format</br>-";
 const bufferHelp =
   "The buffer is the amount of pixel to add to edges of the scrolling visible area to start rendering items further away.";
 
@@ -25,7 +24,7 @@ export default {
   inherit: [{ type: "ww-layout" }, { type: "ww-background-video" }],
   editor: {
     label: {
-      en: "Flexbox",
+      en: "Virtualbox",
     },
     icon: "border",
     bubble: {
@@ -69,21 +68,6 @@ export default {
         type: "b783dc65-d528-4f74-8c14-e27c934c39b1",
       },
     },
-    virtualScroll: {
-      label: { en: "Virtual scroll" },
-      type: "OnOff",
-      defaultValue: true,
-      bindable: true,
-      /* wwEditor:start */
-      bindingValidation: {
-        validations: [{ type: "boolean" }],
-        tooltip: virtualScrollHelp,
-      },
-      propertyHelp: {
-        tooltip: virtualScrollHelp,
-      },
-      /* wwEditor:end */
-    },
     virtualScrollBuffer: {
       label: { en: "Buffer" },
       type: "Number",
@@ -98,7 +82,6 @@ export default {
         tooltip: bufferHelp,
       },
       /* wwEditor:end */
-      hidden: (content) => !content.virtualScroll,
     },
     virtualScrollMinItemSize: {
       label: { en: "Min item size" },
@@ -114,33 +97,7 @@ export default {
         tooltip: minItemSizeHelp,
       },
       /* wwEditor:end */
-      hidden: (content) => !content.virtualScroll,
     },
-    // virtualScrollSizeDependencies: {
-    //   label: { en: "Size dependencies" },
-    //   type: "TextSelect",
-    //   options: (_, sidepanelContent) => {
-    //     return {
-    //       options: Object.keys(sidepanelContent.optionProperties).map(
-    //         (property) => ({
-    //           value: property,
-    //           label: property,
-    //         })
-    //       ),
-    //     };
-    //   },
-
-    //   hidden: (content) => !content.virtualScroll,
-    //   /* wwEditor:start */
-    //   bindingValidation: {
-    //     validations: [{ type: "string" }],
-    //     tooltip: sizeDependenciesHelp,
-    //   },
-    //   propertyHelp: {
-    //     tooltip: sizeDependenciesHelp,
-    //   },
-    //   /* wwEditor:end */
-    // },
     virtualScrollSizeDependency: {
       label: { en: "Size dependency key" },
       type: "Text",

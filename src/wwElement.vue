@@ -27,7 +27,7 @@
 </template>
 
 <script>
-import { ref, inject, computed, watch } from "vue";
+import { computed, watch } from "vue";
 import { DynamicScroller, DynamicScrollerItem } from "vue-virtual-scroller";
 
 export default {
@@ -74,10 +74,11 @@ export default {
       }
       return props.content.children.map((child, index) => {
         if (!child?.id) return { id: index, ...child };
+
         return child;
       });
-      return props.content.children;
     });
+
     const virtualScrollSizeDependency = computed(
       () => props.content.virtualScrollSizeDependency
     );
@@ -85,10 +86,11 @@ export default {
     const virtualScrollMinItemSize = computed(
       () => props.content.virtualScrollMinItemSize || 40
     );
+
     const virtualScrollBuffer = computed(
       () => props.content.virtualScrollBuffer || 400
     );
-    const virtualScroll = computed(() => props.content.virtualScroll);
+
     const isFixed = computed(() => {
       return props.wwElementState.props.isFixed;
     });
@@ -122,7 +124,6 @@ export default {
     );
     /* wwEditor:end */
 
-    //Need to change that
     const onElementClick = (event) => {
       const rawIndex = event.currentTarget.dataset.wwFlexboxIndex;
       const index = parseInt(rawIndex) || 0;
@@ -137,7 +138,6 @@ export default {
       isFixed,
       children,
       onElementClick,
-      virtualScroll,
       virtualScrollSizeDependency,
       virtualScrollMinItemSize,
       virtualScrollBuffer,
@@ -150,6 +150,9 @@ export default {
 <style>
 .-link {
   cursor: pointer;
+}
+.custom {
+  flex-direction: row;
 }
 @import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 </style>
