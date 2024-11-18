@@ -19,6 +19,8 @@
             :local-data="item"
             v-bind="content.flexboxItem"
             class="ww-flexbox"
+            @click="onElementClick"
+            @click.capture="onClickCapture"
           />
         </wwLayoutItemContext>
       </DynamicScrollerItem>
@@ -130,6 +132,14 @@ export default {
       emit("element-event", { type: "click", index });
     };
 
+    const onClickCapture = (event) => {
+      const targetEl = event.currentTarget.closest(
+        ".vue-recycle-scroller__item-view"
+      );
+      const index = event.currentTarget.dataset.wwRepeatIndex ?? 0;
+      targetEl.style.zIndex = props.content.children?.length - index + "";
+    };
+
     return {
       hasLink,
       properties,
@@ -137,6 +147,7 @@ export default {
       tag,
       isFixed,
       children,
+      onClickCapture,
       onElementClick,
       virtualScrollSizeDependency,
       virtualScrollMinItemSize,
@@ -151,8 +162,6 @@ export default {
 .-link {
   cursor: pointer;
 }
-.custom {
-  flex-direction: row;
-}
+
 @import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
 </style>
