@@ -29,7 +29,7 @@
 </template>
 
 <script>
-import { computed, watch } from "vue";
+import { ref, computed, watch } from "vue";
 import { DynamicScroller, DynamicScrollerItem } from "vue-virtual-scroller";
 
 export default {
@@ -132,12 +132,14 @@ export default {
       emit("element-event", { type: "click", index });
     };
 
+    const zindexCount = ref(1);
     const onClickCapture = (event) => {
       const targetEl = event.currentTarget.closest(
         ".vue-recycle-scroller__item-view"
       );
-      const index = event.currentTarget.dataset.wwRepeatIndex ?? 0;
-      targetEl.style.zIndex = props.content.children?.length - index + "";
+      // const index = event.currentTarget.dataset.wwRepeatIndex ?? 0;
+      targetEl.style.zIndex = zindexCount.value.toString();
+      zindexCount.value = zindexCount.value + 1;
     };
 
     return {
