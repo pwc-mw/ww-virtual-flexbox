@@ -1,9 +1,10 @@
 <template>
   <DynamicScroller
+    ref="scrollerRef"
     :items="children"
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
-    :key="children.length"
+    :key="`${children.length}-${fontLoadKey}`"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -29,8 +30,8 @@
 </template>
 
 <script>
-import { ref, computed, watch } from "vue";
-import { DynamicScroller, DynamicScrollerItem } from "vue-virtual-scroller";
+import { ref, computed, watch, onMounted, nextTick } from 'vue';
+import { DynamicScroller, DynamicScrollerItem } from 'vue-virtual-scroller';
 
 export default {
   components: {
@@ -45,14 +46,17 @@ export default {
     wwElementState: { type: Object, required: true },
   },
   emits: [
-    "update:sidepanel-content",
-    "update:content:effect",
-    "update:content",
-    "element-event",
+    'update:sidepanel-content',
+    'update:content:effect',
+    'update:content',
+    'element-event',
   ],
   setup(props, { emit }) {
     const { hasLink, tag, properties } = wwLib.wwElement.useLink();
     const backgroundVideo = wwLib.wwElement.useBackgroundVideo();
+
+    const scrollerRef = ref(null);
+    const fontLoadKey = ref(0);
 
     const isEditing = computed(() => {
       /* wwEditor:start */
@@ -97,17 +101,24 @@ export default {
       return props.wwElementState.props.isFixed;
     });
 
-    const optionProperties = computed(() => {
-      if (!children.value || children.value.length === 0) return {};
-      return children.value[0];
-    });
+    const optionProperties = ref({});
+    
+    // Update optionProperties when children change
+    watch(children, (newChildren) => {
+      if (newChildren && newChildren.length > 0) {
+        optionProperties.value = newChildren[0];
+      } else {
+        optionProperties.value = {};
+      }
+    }, { immediate: true });
+    
     const registerOptionProperties = (object) => {
       if (object) optionProperties.value = object;
     };
     watch(
       optionProperties,
       (value) => {
-        emit("update:sidepanel-content", { path: "optionProperties", value });
+        emit('update:sidepanel-content', { path: 'optionProperties', value });
         if (registerOptionProperties) registerOptionProperties(value);
       },
       { immediate: true }
@@ -117,8 +128,8 @@ export default {
     watch(
       isEditing,
       () => {
-        emit("update:sidepanel-content", {
-          path: "showEmptyStateInEditor",
+        emit('update:sidepanel-content', {
+          path: 'showEmptyStateInEditor',
           value: false,
         });
       },
@@ -129,18 +140,47 @@ export default {
     const onElementClick = (event) => {
       const rawIndex = event.currentTarget.dataset.wwFlexboxIndex;
       const index = parseInt(rawIndex) || 0;
-      emit("element-event", { type: "click", index });
+      emit('element-event', { type: 'click', index });
     };
 
     const zindexCount = ref(1);
     const onClickCapture = (event) => {
       const targetEl = event.currentTarget.closest(
-        ".vue-recycle-scroller__item-view"
+        '.vue-recycle-scroller__item-view'
       );
       // const index = event.currentTarget.dataset.wwRepeatIndex ?? 0;
       targetEl.style.zIndex = zindexCount.value.toString();
       zindexCount.value = zindexCount.value + 1;
     };
+
+    // Force size recalculation after font/CSS loading
+    const forceRecalculation = async () => {
+      await nextTick();
+      await new Promise(resolve => requestAnimationFrame(resolve));
+      
+      if (scrollerRef.value && scrollerRef.value.forceUpdate) {
+        scrollerRef.value.forceUpdate();
+        fontLoadKey.value++;
+      }
+    };
+
+    onMounted(() => {
+      // Wait for fonts and CSS to be fully applied with fallbacks
+      const handleFontLoading = () => {
+        setTimeout(forceRecalculation, 100);
+      };
+
+      // Check if document.fonts is available (might not be in editor environment)
+      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+        document.fonts.ready.then(handleFontLoading).catch(() => {
+          // Fallback if fonts API fails
+          handleFontLoading();
+        });
+      } else {
+        // Fallback for environments without fonts API
+        setTimeout(handleFontLoading, 200);
+      }
+    });
 
     return {
       hasLink,
@@ -155,6 +195,8 @@ export default {
       virtualScrollMinItemSize,
       virtualScrollBuffer,
       showEmptyStateInEditor,
+      scrollerRef,
+      fontLoadKey,
     };
   },
 };
@@ -165,5 +207,6 @@ export default {
   cursor: pointer;
 }
 
-@import "vue-virtual-scroller/dist/vue-virtual-scroller.css";
+@import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
+/* "vue-virtual-scroller": "^2.0.0-beta.8" */
 </style>
