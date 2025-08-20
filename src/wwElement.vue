@@ -5,7 +5,7 @@
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
     :key="children.length"
-    style="border: 1px solid black"
+    style="border: 1px solid green"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -161,27 +161,35 @@ export default {
     // Force size recalculation after font/CSS loading
     const forceRecalculation = async () => {
       console.log('🔄 Starting virtual scroller recalculation...');
-      
+
+      // Multiple frame delay to ensure DOM is stable
       await nextTick();
+      await new Promise((resolve) => requestAnimationFrame(resolve));
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
       if (scrollerRef.value) {
+        // Force multiple recalculation methods for consistency
         if (scrollerRef.value.forceUpdate) {
           console.log('✅ Calling forceUpdate() on virtual scroller');
           scrollerRef.value.forceUpdate();
-        } else {
-          console.warn('⚠️ forceUpdate() method not found on virtual scroller');
         }
-        
-        // Additional force methods if available
+
         if (scrollerRef.value.updateVisibleItems) {
           console.log('🔄 Calling updateVisibleItems()');
           scrollerRef.value.updateVisibleItems(true);
         }
+
+        // Force size refresh with delayed secondary call
+        setTimeout(() => {
+          if (scrollerRef.value?.forceUpdate) {
+            console.log('🔄 Secondary forceUpdate() call');
+            scrollerRef.value.forceUpdate();
+          }
+        }, 200);
       } else {
         console.error('❌ scrollerRef is not available');
       }
-      
+
       console.log('✨ Recalculation complete');
     };
 
@@ -191,10 +199,10 @@ export default {
         const testEl = document.createElement('div');
         testEl.style.fontFamily = 'var(--ww-default-font-family)';
         document.body.appendChild(testEl);
-        
+
         const computedFont = window.getComputedStyle(testEl).fontFamily;
         document.body.removeChild(testEl);
-        
+
         // If CSS var resolved, WeWeb is ready
         if (computedFont !== 'var(--ww-default-font-family)') {
           setTimeout(forceRecalculation, 100);
@@ -202,7 +210,7 @@ export default {
           setTimeout(waitForWeWebReady, 50);
         }
       };
-      
+
       waitForWeWebReady();
     });
 
@@ -232,4 +240,18 @@ export default {
 
 @import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
 /* "vue-virtual-scroller": "^2.0.0-beta.8" */
+
+/* Force overflow behavior in production - fixes WeWeb build interference */
+.vue-recycle-scroller.direction-vertical {
+  overflow-y: auto !important;
+}
+
+/* Ensure consistent sizing across environments */
+.vue-recycle-scroller__item-wrapper {
+  box-sizing: border-box !important;
+}
+
+.vue-recycle-scroller__item-view {
+  box-sizing: border-box !important;
+}
 </style>
