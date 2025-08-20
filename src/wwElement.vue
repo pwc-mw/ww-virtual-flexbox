@@ -4,7 +4,7 @@
     :items="children"
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
-    :key="`${children.length}-${fontLoadKey}`"
+    :key="children.length"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -160,7 +160,6 @@ export default {
       
       if (scrollerRef.value && scrollerRef.value.forceUpdate) {
         scrollerRef.value.forceUpdate();
-        fontLoadKey.value++;
       }
     };
 
@@ -196,7 +195,6 @@ export default {
       virtualScrollBuffer,
       showEmptyStateInEditor,
       scrollerRef,
-      fontLoadKey,
     };
   },
 };
