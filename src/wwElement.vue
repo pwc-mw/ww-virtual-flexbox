@@ -4,8 +4,8 @@
     :items="children"
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
-    :key="children.length"
-    style="border: 1px solid green"
+    :key="`scroller-${children.length}`"
+    style="border: 1px solid red"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -13,7 +13,9 @@
         :active="active"
         :data-index="index"
         :size-dependencies="[
-          item ? item[virtualScrollSizeDependency] : JSON.stringify(item),
+          virtualScrollSizeDependency.value && item
+            ? item[virtualScrollSizeDependency.value]
+            : JSON.stringify(item),
         ]"
       >
         <wwLayoutItemContext :key="index" is-repeat :index="index" :data="item">
@@ -182,6 +184,23 @@ export default {
       console.log('📊 CHILDREN COUNT:', children.value?.length || 0);
       console.log('🔧 MIN ITEM SIZE:', virtualScrollMinItemSize.value);
       console.log('📏 BUFFER SIZE:', virtualScrollBuffer.value);
+      console.log('🔑 SIZE DEPENDENCY KEY:', virtualScrollSizeDependency.value);
+
+      // Log size dependencies for each item
+      if (children.value?.length > 0) {
+        console.log('📋 SIZE DEPENDENCIES PER ITEM:');
+        children.value.slice(0, 3).forEach((item, index) => {
+          const sizeDep =
+            virtualScrollSizeDependency.value && item
+              ? item[virtualScrollSizeDependency.value]
+              : JSON.stringify(item);
+          console.log(
+            `  Item ${index}: ${
+              typeof sizeDep === 'string' ? sizeDep.substring(0, 50) : sizeDep
+            }`
+          );
+        });
+      }
 
       // Multiple frame delay to ensure DOM is stable
       await nextTick();
