@@ -5,6 +5,7 @@
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
     :key="children.length"
+    style="border: 1px solid black"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -102,16 +103,20 @@ export default {
     });
 
     const optionProperties = ref({});
-    
+
     // Update optionProperties when children change
-    watch(children, (newChildren) => {
-      if (newChildren && newChildren.length > 0) {
-        optionProperties.value = newChildren[0];
-      } else {
-        optionProperties.value = {};
-      }
-    }, { immediate: true });
-    
+    watch(
+      children,
+      (newChildren) => {
+        if (newChildren && newChildren.length > 0) {
+          optionProperties.value = newChildren[0];
+        } else {
+          optionProperties.value = {};
+        }
+      },
+      { immediate: true }
+    );
+
     const registerOptionProperties = (object) => {
       if (object) optionProperties.value = object;
     };
@@ -156,8 +161,8 @@ export default {
     // Force size recalculation after font/CSS loading
     const forceRecalculation = async () => {
       await nextTick();
-      await new Promise(resolve => requestAnimationFrame(resolve));
-      
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+
       if (scrollerRef.value && scrollerRef.value.forceUpdate) {
         scrollerRef.value.forceUpdate();
       }
@@ -166,18 +171,22 @@ export default {
     onMounted(() => {
       // Wait for fonts and CSS to be fully applied with fallbacks
       const handleFontLoading = () => {
-        setTimeout(forceRecalculation, 100);
+        setTimeout(forceRecalculation, 10000);
       };
 
       // Check if document.fonts is available (might not be in editor environment)
-      if (typeof document !== 'undefined' && document.fonts && document.fonts.ready) {
+      if (
+        typeof document !== 'undefined' &&
+        document.fonts &&
+        document.fonts.ready
+      ) {
         document.fonts.ready.then(handleFontLoading).catch(() => {
           // Fallback if fonts API fails
           handleFontLoading();
         });
       } else {
         // Fallback for environments without fonts API
-        setTimeout(handleFontLoading, 200);
+        setTimeout(handleFontLoading, 10200);
       }
     });
 
