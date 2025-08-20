@@ -5,7 +5,7 @@
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
     :key="`scroller-${children.length}-${forceRenderKey}`"
-    style="border: 1px solid red"
+    style="border: 1px solid black"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -175,7 +175,9 @@ export default {
 
       // Safety check - ensure all required props exist
       if (!props || !props.content) {
-        console.error('❌ Props or content not available, skipping recalculation');
+        console.error(
+          '❌ Props or content not available, skipping recalculation'
+        );
         return;
       }
 
@@ -189,9 +191,15 @@ export default {
 
       console.log('🌍 ENVIRONMENT:', isEditor?.value ? 'EDITOR' : 'PRODUCTION');
       console.log('📊 CHILDREN COUNT:', children?.value?.length || 0);
-      console.log('🔧 MIN ITEM SIZE:', virtualScrollMinItemSize?.value || 'undefined');
+      console.log(
+        '🔧 MIN ITEM SIZE:',
+        virtualScrollMinItemSize?.value || 'undefined'
+      );
       console.log('📏 BUFFER SIZE:', virtualScrollBuffer?.value || 'undefined');
-      console.log('🔑 SIZE DEPENDENCY KEY:', virtualScrollSizeDependency?.value || 'undefined');
+      console.log(
+        '🔑 SIZE DEPENDENCY KEY:',
+        virtualScrollSizeDependency?.value || 'undefined'
+      );
 
       // Log size dependencies for each item
       if (children?.value?.length > 0) {
@@ -300,7 +308,10 @@ export default {
           '.vue-recycle-scroller__item-view'
         );
         console.log('📋 VISIBLE ITEMS COUNT:', itemViews.length);
-        console.log('📋 EXPECTED CHILDREN COUNT:', children?.value?.length || 0);
+        console.log(
+          '📋 EXPECTED CHILDREN COUNT:',
+          children?.value?.length || 0
+        );
 
         // Check if items exist but are not visible (hidden, overflow, positioning issues)
         itemViews.forEach((itemView, index) => {
@@ -311,11 +322,13 @@ export default {
           // Find the text content
           const textEl = itemView.querySelector('p');
           const textContent = textEl ? textEl.textContent : 'no text';
-          
+
           // Check visibility
-          const isVisible = itemRect.height > 0 && itemRect.width > 0 && 
-                           itemStyle.visibility !== 'hidden' && 
-                           itemStyle.display !== 'none';
+          const isVisible =
+            itemRect.height > 0 &&
+            itemRect.width > 0 &&
+            itemStyle.visibility !== 'hidden' &&
+            itemStyle.display !== 'none';
 
           console.log(`📄 ITEM ${index} (${textContent}):`, {
             height: itemRect.height,
@@ -328,9 +341,11 @@ export default {
             display: itemStyle.display,
             opacity: itemStyle.opacity,
             isVisible: isVisible,
-            innerHTML: itemView.innerHTML ? itemView.innerHTML.substring(0, 100) + '...' : 'no content'
+            innerHTML: itemView.innerHTML
+              ? itemView.innerHTML.substring(0, 100) + '...'
+              : 'no content',
           });
-          
+
           // Check if wwElement exists inside the item
           const wwElementEl = itemView.querySelector('.ww-flexbox');
           if (wwElementEl) {
@@ -342,7 +357,7 @@ export default {
               display: wwElementStyle.display,
               visibility: wwElementStyle.visibility,
               opacity: wwElementStyle.opacity,
-              hasContent: wwElementEl.children.length > 0
+              hasContent: wwElementEl.children.length > 0,
             });
           } else {
             console.log(`  ❌ ITEM ${index} NO wwElement found!`);
@@ -356,8 +371,27 @@ export default {
           ready: scrollerRef.value.ready,
           scrollTop: scrollerRef.value.scrollTop || 0,
           viewStartIndex: scrollerRef.value.pool?.startIndex,
-          viewEndIndex: scrollerRef.value.pool?.endIndex
+          viewEndIndex: scrollerRef.value.pool?.endIndex,
         });
+
+        // Check if scroller has 'ready' class - critical for positioning
+        const hasReadyClass = scrollerEl.classList.contains('ready');
+        console.log('🎯 SCROLLER READY CLASS:', hasReadyClass);
+
+        if (!hasReadyClass) {
+          console.warn(
+            '⚠️ Virtual scroller missing "ready" class - forcing ready state'
+          );
+          scrollerEl.classList.add('ready');
+
+          // Force immediate recalculation after adding ready class
+          setTimeout(() => {
+            if (scrollerRef.value?.forceUpdate) {
+              console.log('🔄 Re-recalculating after adding ready class');
+              scrollerRef.value.forceUpdate();
+            }
+          }, 50);
+        }
 
         // Force multiple recalculation methods for consistency
         if (typeof scrollerRef.value.forceUpdate === 'function') {
@@ -403,20 +437,29 @@ export default {
           scrollerElExists: !!scrollerRef?.value?.$el,
           childrenCount: children?.value?.length || 0,
           propsAvailable: !!props,
-          contentAvailable: !!props?.content
+          contentAvailable: !!props?.content,
         });
-        
+
         // Simplified diagnostic without getComputedStyle
         try {
           const scrollerEl = scrollerRef.value?.$el;
           if (scrollerEl) {
-            const itemWrapper = scrollerEl.querySelector('.vue-recycle-scroller__item-wrapper');
+            const itemWrapper = scrollerEl.querySelector(
+              '.vue-recycle-scroller__item-wrapper'
+            );
             if (itemWrapper) {
-              console.log('🔧 FALLBACK - Item wrapper found, checking inline styles...');
-              console.log('📏 WRAPPER INLINE STYLE:', itemWrapper.style.cssText || 'no inline styles');
+              console.log(
+                '🔧 FALLBACK - Item wrapper found, checking inline styles...'
+              );
+              console.log(
+                '📏 WRAPPER INLINE STYLE:',
+                itemWrapper.style.cssText || 'no inline styles'
+              );
             }
-            
-            const itemViews = scrollerEl.querySelectorAll('.vue-recycle-scroller__item-view');
+
+            const itemViews = scrollerEl.querySelectorAll(
+              '.vue-recycle-scroller__item-view'
+            );
             console.log('📋 FALLBACK - Visible items:', itemViews.length);
           }
         } catch (fallbackError) {
@@ -489,12 +532,25 @@ export default {
   overflow-y: auto !important;
 }
 
-/* Ensure consistent sizing across environments */
+/* Ensure consistent sizing and positioning across environments */
 .vue-recycle-scroller__item-wrapper {
   box-sizing: border-box !important;
+  width: 100% !important;
+  position: relative !important;
 }
 
-.vue-recycle-scroller__item-view {
-  box-sizing: border-box !important;
+/* Critical: Force correct virtual scroller positioning */
+.vue-recycle-scroller.ready .vue-recycle-scroller__item-view {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100% !important;
+  will-change: transform !important;
+}
+
+/* Ensure proper vertical layout */
+.vue-recycle-scroller.ready.direction-vertical
+  .vue-recycle-scroller__item-view {
+  width: 100% !important;
 }
 </style>
