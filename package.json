@@ -1,6 +1,6 @@
 {
   "name": "virtual-scroll-flexbox",
-  "version": "0.0.1",
+  "version": "0.0.8",
   "scripts": {
     "build": "weweb build",
     "serve": "weweb serve"
