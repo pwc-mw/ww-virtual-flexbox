@@ -1,62 +1,59 @@
 const virtualScrollHelp =
-  "Virtual scrolling optimizes performance by only rendering visible options and a small buffer around them. When enabled, this feature can significantly improve loading and scrolling performance for large lists.</br></br>Important notes:</br>- The layout will be forced to a vertical list format</br>-";
+  'Virtual scrolling optimizes performance by only rendering visible options and a small buffer around them. When enabled, this feature can significantly improve loading and scrolling performance for large lists.</br></br>Important notes:</br>- The layout will be forced to a vertical list format</br>-';
 const bufferHelp =
-  "The buffer is the amount of pixel to add to edges of the scrolling visible area to start rendering items further away.";
+  'The buffer is the amount of pixel to add to edges of the scrolling visible area to start rendering items further away.';
 
-const minItemSizeHelp = "The minimum height of an item in the virtual scroll.";
+const minItemSizeHelp = 'The minimum height of an item in the virtual scroll.';
 
 const sizeDependenciesHelp =
-  "The main property that can affect the size of the item. This prop will be watched and if it changes, the size will be recomputed.";
+  'The main property that can affect the size of the item. This prop will be watched and if it changes, the size will be recomputed.';
 
 export default {
   options: {
     lazyHydrate: true,
     displayAllowedValues: [
-      "flex",
-      "block",
-      "grid",
-      "inline-flex",
-      "inline-block",
-      "inline-grid",
+      'flex',
+      'block',
+      'grid',
+      'inline-flex',
+      'inline-block',
+      'inline-grid',
     ],
     linkable: true,
   },
-  inherit: [{ type: "ww-layout" }, { type: "ww-background-video" }],
+  inherit: [{ type: 'ww-layout' }, { type: 'ww-background-video' }],
   editor: {
     label: {
-      en: "Virtualbox",
+      en: 'Virtualbox',
     },
-    icon: "border",
+    icon: 'border',
     bubble: {
-      icon: "border",
+      icon: 'border',
     },
-    customStylePropertiesOrder: ["children"],
+    customStylePropertiesOrder: ['children'],
   },
   properties: {
     children: {
       label: {
-        en: "Items",
-        fr: "Items",
+        en: 'Items',
+        fr: 'Items',
       },
-      type: "Array",
+      type: 'Info',
       options: {
-        item: {
-          type: "Object",
-          defaultValue: {},
-        },
+        text: { en: 'Elements to repeat' },
       },
       hidden: (content, sidePanelContent, boundProps, wwProps) =>
         !!(wwProps && wwProps.isFixed),
-      bindable: "repeatable",
+      bindable: 'repeatable',
       defaultValue: [],
       /* wwEditor:start */
       bindingValidation: {
         validations: [
           {
-            type: "array",
+            type: 'array',
           },
           {
-            type: "object",
+            type: 'object',
           },
         ],
         tooltip:
@@ -68,17 +65,17 @@ export default {
       hidden: true,
       defaultValue: {
         isWwObject: true,
-        type: "b783dc65-d528-4f74-8c14-e27c934c39b1",
+        type: 'b783dc65-d528-4f74-8c14-e27c934c39b1',
       },
     },
     virtualScrollBuffer: {
-      label: { en: "Buffer" },
-      type: "Number",
+      label: { en: 'Buffer' },
+      type: 'Number',
       defaultValue: 600,
       bindable: true,
       /* wwEditor:start */
       bindingValidation: {
-        validations: [{ type: "number" }],
+        validations: [{ type: 'number' }],
         tooltip: bufferHelp,
       },
       propertyHelp: {
@@ -87,13 +84,13 @@ export default {
       /* wwEditor:end */
     },
     virtualScrollMinItemSize: {
-      label: { en: "Min item size" },
-      type: "Number",
+      label: { en: 'Min item size' },
+      type: 'Number',
       defaultValue: 40,
       bindable: true,
       /* wwEditor:start */
       bindingValidation: {
-        validations: [{ type: "number" }],
+        validations: [{ type: 'number' }],
         tooltip: minItemSizeHelp,
       },
       propertyHelp: {
@@ -102,8 +99,8 @@ export default {
       /* wwEditor:end */
     },
     virtualScrollSizeDependency: {
-      label: { en: "Size dependency key" },
-      type: "Text",
+      label: { en: 'Size dependency key' },
+      type: 'Text',
       bindable: true,
       editorOnly: true,
       /* wwEditor:start */
@@ -111,7 +108,7 @@ export default {
         tooltip: sizeDependenciesHelp,
       },
       /* wwEditor:end */
-      defaultValue: "",
+      defaultValue: '',
     },
   },
 };

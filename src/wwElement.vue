@@ -13,8 +13,8 @@
         :active="active"
         :data-index="index"
         :size-dependencies="[
-          virtualScrollSizeDependency.value && item
-            ? item[virtualScrollSizeDependency.value]
+          virtualScrollSizeDependency?.value && item
+            ? item[virtualScrollSizeDependency?.value]
             : JSON.stringify(item),
         ]"
       >
@@ -172,6 +172,12 @@ export default {
     const forceRecalculation = async () => {
       console.log('🔄 Starting DIAGNOSTIC virtual scroller recalculation...');
 
+      // Safety check - ensure all required props exist
+      if (!props || !props.content) {
+        console.error('❌ Props or content not available, skipping recalculation');
+        return;
+      }
+
       // 🔍 ENVIRONMENT DETECTION
       const isEditor = computed(() => {
         /* wwEditor:start */
@@ -180,18 +186,18 @@ export default {
         return false;
       });
 
-      console.log('🌍 ENVIRONMENT:', isEditor.value ? 'EDITOR' : 'PRODUCTION');
-      console.log('📊 CHILDREN COUNT:', children.value?.length || 0);
-      console.log('🔧 MIN ITEM SIZE:', virtualScrollMinItemSize.value);
-      console.log('📏 BUFFER SIZE:', virtualScrollBuffer.value);
-      console.log('🔑 SIZE DEPENDENCY KEY:', virtualScrollSizeDependency.value);
+      console.log('🌍 ENVIRONMENT:', isEditor?.value ? 'EDITOR' : 'PRODUCTION');
+      console.log('📊 CHILDREN COUNT:', children?.value?.length || 0);
+      console.log('🔧 MIN ITEM SIZE:', virtualScrollMinItemSize?.value || 'undefined');
+      console.log('📏 BUFFER SIZE:', virtualScrollBuffer?.value || 'undefined');
+      console.log('🔑 SIZE DEPENDENCY KEY:', virtualScrollSizeDependency?.value || 'undefined');
 
       // Log size dependencies for each item
-      if (children.value?.length > 0) {
+      if (children?.value?.length > 0) {
         console.log('📋 SIZE DEPENDENCIES PER ITEM:');
         children.value.slice(0, 3).forEach((item, index) => {
           const sizeDep =
-            virtualScrollSizeDependency.value && item
+            virtualScrollSizeDependency?.value && item
               ? item[virtualScrollSizeDependency.value]
               : JSON.stringify(item);
           console.log(
@@ -349,9 +355,11 @@ export default {
       } catch (error) {
         console.error('❌ Error during diagnostic recalculation:', error);
         console.log('🔍 Fallback diagnostic info:', {
-          scrollerRefExists: !!scrollerRef.value,
-          scrollerElExists: !!scrollerRef.value?.$el,
-          childrenCount: children.value?.length || 0
+          scrollerRefExists: !!scrollerRef?.value,
+          scrollerElExists: !!scrollerRef?.value?.$el,
+          childrenCount: children?.value?.length || 0,
+          propsAvailable: !!props,
+          contentAvailable: !!props?.content
         });
         
         // Simplified diagnostic without getComputedStyle
