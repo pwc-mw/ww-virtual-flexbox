@@ -5,7 +5,7 @@
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
     :key="children.length"
-    style="border: 1px solid red"
+    style="border: 1px solid green"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -166,9 +166,22 @@ export default {
       zindexCount.value = zindexCount.value + 1;
     };
 
-    // Safe force recalculation with proper error handling
+    // ULTRA-DIAGNOSTIC force recalculation with production insights
     const forceRecalculation = async () => {
-      console.log('🔄 Starting virtual scroller recalculation...');
+      console.log('🔄 Starting DIAGNOSTIC virtual scroller recalculation...');
+
+      // 🔍 ENVIRONMENT DETECTION
+      const isEditor = computed(() => {
+        /* wwEditor:start */
+        return props.wwEditorState?.isEditing || false;
+        /* wwEditor:end */
+        return false;
+      });
+
+      console.log('🌍 ENVIRONMENT:', isEditor.value ? 'EDITOR' : 'PRODUCTION');
+      console.log('📊 CHILDREN COUNT:', children.value?.length || 0);
+      console.log('🔧 MIN ITEM SIZE:', virtualScrollMinItemSize.value);
+      console.log('📏 BUFFER SIZE:', virtualScrollBuffer.value);
 
       // Multiple frame delay to ensure DOM is stable
       await nextTick();
@@ -188,7 +201,99 @@ export default {
         return;
       }
 
+      // 🔍 DEEP DIAGNOSTIC LOGGING
       try {
+        const scrollerEl = scrollerRef.value.$el;
+        console.log('🎯 SCROLLER ELEMENT:', scrollerEl);
+
+        if (scrollerEl) {
+          const computedStyle = window.getComputedStyle(scrollerEl);
+          const rect = scrollerEl.getBoundingClientRect();
+
+          console.log('📐 SCROLLER COMPUTED STYLES:', {
+            height: computedStyle.height,
+            minHeight: computedStyle.minHeight,
+            maxHeight: computedStyle.maxHeight,
+            display: computedStyle.display,
+            overflow: computedStyle.overflow,
+            overflowY: computedStyle.overflowY,
+            position: computedStyle.position,
+            boxSizing: computedStyle.boxSizing,
+          });
+
+          console.log('📏 SCROLLER BOUNDS:', {
+            width: rect.width,
+            height: rect.height,
+            top: rect.top,
+            left: rect.left,
+          });
+
+          // Find the item wrapper
+          const itemWrapper = scrollerEl.querySelector(
+            '.vue-recycle-scroller__item-wrapper'
+          );
+          if (itemWrapper) {
+            const wrapperStyle = window.getComputedStyle(itemWrapper);
+            console.log('📦 ITEM WRAPPER STYLES:', {
+              minHeight: wrapperStyle.minHeight,
+              height: wrapperStyle.height,
+              position: wrapperStyle.position,
+              boxSizing: wrapperStyle.boxSizing,
+            });
+          }
+
+          // Test CSS variable resolution
+          const testEl = document.createElement('div');
+          testEl.style.fontFamily = 'var(--ww-default-font-family)';
+          testEl.style.fontSize = '16px';
+          testEl.innerHTML = 'Test';
+          scrollerEl.appendChild(testEl);
+
+          const testStyle = window.getComputedStyle(testEl);
+          console.log('🔤 CSS VARIABLE TEST:', {
+            fontFamily: testStyle.fontFamily,
+            fontSize: testStyle.fontSize,
+            lineHeight: testStyle.lineHeight,
+            resolved: !testStyle.fontFamily.includes('var(--'),
+          });
+
+          scrollerEl.removeChild(testEl);
+        }
+
+        // Log virtual scroller internal properties
+        console.log('⚙️ VIRTUAL SCROLLER INTERNAL:', {
+          ready: scrollerRef.value.ready,
+          items: scrollerRef.value.items?.length,
+          visibleItems: scrollerRef.value.visibleItems?.length,
+          itemSize: scrollerRef.value.itemSize,
+          sizes: scrollerRef.value.sizes,
+        });
+
+        // 🔍 LOG INDIVIDUAL ITEM MEASUREMENTS
+        const itemViews = scrollerEl.querySelectorAll(
+          '.vue-recycle-scroller__item-view'
+        );
+        console.log('📋 VISIBLE ITEMS COUNT:', itemViews.length);
+
+        itemViews.forEach((itemView, index) => {
+          const itemRect = itemView.getBoundingClientRect();
+          const itemStyle = window.getComputedStyle(itemView);
+          const transform = itemStyle.transform;
+
+          // Find the text content
+          const textEl = itemView.querySelector('p');
+          const textContent = textEl ? textEl.textContent : 'no text';
+
+          console.log(`📄 ITEM ${index} (${textContent}):`, {
+            height: itemRect.height,
+            width: itemRect.width,
+            transform: transform,
+            position: itemStyle.position,
+            top: itemRect.top,
+            bottom: itemRect.bottom,
+          });
+        });
+
         // Force multiple recalculation methods for consistency
         if (typeof scrollerRef.value.forceUpdate === 'function') {
           console.log('✅ Calling forceUpdate() on virtual scroller');
@@ -205,15 +310,28 @@ export default {
           if (scrollerRef.value?.forceUpdate) {
             console.log('🔄 Secondary forceUpdate() call');
             scrollerRef.value.forceUpdate();
+
+            // Log final state after recalculation
+            setTimeout(() => {
+              if (scrollerRef.value.$el) {
+                const finalWrapper = scrollerRef.value.$el.querySelector(
+                  '.vue-recycle-scroller__item-wrapper'
+                );
+                if (finalWrapper) {
+                  const finalStyle = window.getComputedStyle(finalWrapper);
+                  console.log('🏁 FINAL WRAPPER HEIGHT:', finalStyle.minHeight);
+                }
+              }
+            }, 100);
           }
         }, 200);
 
-        console.log('✅ Recalculation methods called successfully');
+        console.log('✅ Diagnostic recalculation methods called successfully');
       } catch (error) {
-        console.error('❌ Error during recalculation:', error);
+        console.error('❌ Error during diagnostic recalculation:', error);
       }
 
-      console.log('✨ Recalculation complete');
+      console.log('✨ Diagnostic recalculation complete');
     };
 
     onMounted(() => {
