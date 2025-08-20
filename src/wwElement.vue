@@ -4,7 +4,7 @@
     :items="children"
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
-    :key="`scroller-${children.length}`"
+    :key="`scroller-${children.length}-${forceRenderKey}`"
     style="border: 1px solid red"
   >
     <template v-slot="{ item, index, active }">
@@ -60,6 +60,7 @@ export default {
 
     const scrollerRef = ref(null);
     const fontLoadKey = ref(0);
+    const forceRenderKey = ref(0);
 
     const isEditing = computed(() => {
       /* wwEditor:start */
@@ -294,12 +295,14 @@ export default {
           sizes: scrollerRef.value.sizes,
         });
 
-        // 🔍 LOG INDIVIDUAL ITEM MEASUREMENTS
+        // 🔍 DEEP DOM ANALYSIS FOR CHILDREN RENDERING
         const itemViews = scrollerEl.querySelectorAll(
           '.vue-recycle-scroller__item-view'
         );
         console.log('📋 VISIBLE ITEMS COUNT:', itemViews.length);
+        console.log('📋 EXPECTED CHILDREN COUNT:', children?.value?.length || 0);
 
+        // Check if items exist but are not visible (hidden, overflow, positioning issues)
         itemViews.forEach((itemView, index) => {
           const itemRect = itemView.getBoundingClientRect();
           const itemStyle = window.getComputedStyle(itemView);
@@ -308,6 +311,11 @@ export default {
           // Find the text content
           const textEl = itemView.querySelector('p');
           const textContent = textEl ? textEl.textContent : 'no text';
+          
+          // Check visibility
+          const isVisible = itemRect.height > 0 && itemRect.width > 0 && 
+                           itemStyle.visibility !== 'hidden' && 
+                           itemStyle.display !== 'none';
 
           console.log(`📄 ITEM ${index} (${textContent}):`, {
             height: itemRect.height,
@@ -316,7 +324,39 @@ export default {
             position: itemStyle.position,
             top: itemRect.top,
             bottom: itemRect.bottom,
+            visibility: itemStyle.visibility,
+            display: itemStyle.display,
+            opacity: itemStyle.opacity,
+            isVisible: isVisible,
+            innerHTML: itemView.innerHTML ? itemView.innerHTML.substring(0, 100) + '...' : 'no content'
           });
+          
+          // Check if wwElement exists inside the item
+          const wwElementEl = itemView.querySelector('.ww-flexbox');
+          if (wwElementEl) {
+            const wwElementRect = wwElementEl.getBoundingClientRect();
+            const wwElementStyle = window.getComputedStyle(wwElementEl);
+            console.log(`  🔗 ITEM ${index} wwElement:`, {
+              height: wwElementRect.height,
+              width: wwElementRect.width,
+              display: wwElementStyle.display,
+              visibility: wwElementStyle.visibility,
+              opacity: wwElementStyle.opacity,
+              hasContent: wwElementEl.children.length > 0
+            });
+          } else {
+            console.log(`  ❌ ITEM ${index} NO wwElement found!`);
+          }
+        });
+
+        // Check if virtual scroller thinks items are rendered
+        console.log('🔍 VIRTUAL SCROLLER STATE:', {
+          totalItems: scrollerRef.value.items?.length || 0,
+          visibleItems: scrollerRef.value.visibleItems?.length || 0,
+          ready: scrollerRef.value.ready,
+          scrollTop: scrollerRef.value.scrollTop || 0,
+          viewStartIndex: scrollerRef.value.pool?.startIndex,
+          viewEndIndex: scrollerRef.value.pool?.endIndex
         });
 
         // Force multiple recalculation methods for consistency
@@ -329,6 +369,10 @@ export default {
           console.log('🔄 Calling updateVisibleItems()');
           scrollerRef.value.updateVisibleItems(true);
         }
+
+        // Force Vue reactivity re-render by incrementing render key
+        console.log('🔄 Triggering reactivity update for DOM re-render...');
+        forceRenderKey.value++;
 
         // Force size refresh with delayed secondary call
         setTimeout(() => {
@@ -426,6 +470,7 @@ export default {
       virtualScrollBuffer,
       showEmptyStateInEditor,
       scrollerRef,
+      forceRenderKey,
     };
   },
 };
