@@ -160,34 +160,50 @@ export default {
 
     // Force size recalculation after font/CSS loading
     const forceRecalculation = async () => {
+      console.log('🔄 Starting virtual scroller recalculation...');
+      
       await nextTick();
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      if (scrollerRef.value && scrollerRef.value.forceUpdate) {
-        scrollerRef.value.forceUpdate();
+      if (scrollerRef.value) {
+        if (scrollerRef.value.forceUpdate) {
+          console.log('✅ Calling forceUpdate() on virtual scroller');
+          scrollerRef.value.forceUpdate();
+        } else {
+          console.warn('⚠️ forceUpdate() method not found on virtual scroller');
+        }
+        
+        // Additional force methods if available
+        if (scrollerRef.value.updateVisibleItems) {
+          console.log('🔄 Calling updateVisibleItems()');
+          scrollerRef.value.updateVisibleItems(true);
+        }
+      } else {
+        console.error('❌ scrollerRef is not available');
       }
+      
+      console.log('✨ Recalculation complete');
     };
 
     onMounted(() => {
-      // Wait for fonts and CSS to be fully applied with fallbacks
-      const handleFontLoading = () => {
-        setTimeout(forceRecalculation, 10000);
+      // Wait for WeWeb's CSS variables to be fully resolved
+      const waitForWeWebReady = () => {
+        const testEl = document.createElement('div');
+        testEl.style.fontFamily = 'var(--ww-default-font-family)';
+        document.body.appendChild(testEl);
+        
+        const computedFont = window.getComputedStyle(testEl).fontFamily;
+        document.body.removeChild(testEl);
+        
+        // If CSS var resolved, WeWeb is ready
+        if (computedFont !== 'var(--ww-default-font-family)') {
+          setTimeout(forceRecalculation, 100);
+        } else {
+          setTimeout(waitForWeWebReady, 50);
+        }
       };
-
-      // Check if document.fonts is available (might not be in editor environment)
-      if (
-        typeof document !== 'undefined' &&
-        document.fonts &&
-        document.fonts.ready
-      ) {
-        document.fonts.ready.then(handleFontLoading).catch(() => {
-          // Fallback if fonts API fails
-          handleFontLoading();
-        });
-      } else {
-        // Fallback for environments without fonts API
-        setTimeout(handleFontLoading, 10200);
-      }
+      
+      waitForWeWebReady();
     });
 
     return {
