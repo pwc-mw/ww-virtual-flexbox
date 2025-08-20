@@ -220,12 +220,12 @@ export default {
         return;
       }
 
-      // 🔍 DEEP DIAGNOSTIC LOGGING
+      // 🔍 DEEP DIAGNOSTIC LOGGING (with comprehensive error handling)
       try {
-        const scrollerEl = scrollerRef.value.$el;
-        console.log('🎯 SCROLLER ELEMENT:', scrollerEl);
+        const scrollerEl = scrollerRef.value?.$el;
+        console.log('🎯 SCROLLER ELEMENT:', scrollerEl || 'NULL');
 
-        if (scrollerEl) {
+        if (scrollerEl && scrollerEl.nodeType === Node.ELEMENT_NODE) {
           const computedStyle = window.getComputedStyle(scrollerEl);
           const rect = scrollerEl.getBoundingClientRect();
 
@@ -251,7 +251,7 @@ export default {
           const itemWrapper = scrollerEl.querySelector(
             '.vue-recycle-scroller__item-wrapper'
           );
-          if (itemWrapper) {
+          if (itemWrapper && itemWrapper.nodeType === Node.ELEMENT_NODE) {
             const wrapperStyle = window.getComputedStyle(itemWrapper);
             console.log('📦 ITEM WRAPPER STYLES:', {
               minHeight: wrapperStyle.minHeight,
@@ -348,6 +348,28 @@ export default {
         console.log('✅ Diagnostic recalculation methods called successfully');
       } catch (error) {
         console.error('❌ Error during diagnostic recalculation:', error);
+        console.log('🔍 Fallback diagnostic info:', {
+          scrollerRefExists: !!scrollerRef.value,
+          scrollerElExists: !!scrollerRef.value?.$el,
+          childrenCount: children.value?.length || 0
+        });
+        
+        // Simplified diagnostic without getComputedStyle
+        try {
+          const scrollerEl = scrollerRef.value?.$el;
+          if (scrollerEl) {
+            const itemWrapper = scrollerEl.querySelector('.vue-recycle-scroller__item-wrapper');
+            if (itemWrapper) {
+              console.log('🔧 FALLBACK - Item wrapper found, checking inline styles...');
+              console.log('📏 WRAPPER INLINE STYLE:', itemWrapper.style.cssText || 'no inline styles');
+            }
+            
+            const itemViews = scrollerEl.querySelectorAll('.vue-recycle-scroller__item-view');
+            console.log('📋 FALLBACK - Visible items:', itemViews.length);
+          }
+        } catch (fallbackError) {
+          console.error('❌ Even fallback diagnostic failed:', fallbackError);
+        }
       }
 
       console.log('✨ Diagnostic recalculation complete');
