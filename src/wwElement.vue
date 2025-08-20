@@ -113,6 +113,14 @@ export default {
         } else {
           optionProperties.value = {};
         }
+        
+        // Recalculate virtual scroller when children change
+        if (scrollerRef.value) {
+          console.log('📱 Children changed, recalculating virtual scroller...');
+          nextTick(() => {
+            forceRecalculation();
+          });
+        }
       },
       { immediate: true }
     );
@@ -158,7 +166,7 @@ export default {
       zindexCount.value = zindexCount.value + 1;
     };
 
-    // Force size recalculation after font/CSS loading
+    // Safe force recalculation with proper error handling
     const forceRecalculation = async () => {
       console.log('🔄 Starting virtual scroller recalculation...');
 
@@ -167,14 +175,25 @@ export default {
       await new Promise((resolve) => requestAnimationFrame(resolve));
       await new Promise((resolve) => requestAnimationFrame(resolve));
 
-      if (scrollerRef.value) {
+      if (!scrollerRef.value) {
+        console.warn('⚠️ scrollerRef not available, scheduling retry...');
+        setTimeout(() => {
+          if (scrollerRef.value) {
+            console.log('🔄 Retrying recalculation after scrollerRef became available');
+            forceRecalculation();
+          }
+        }, 100);
+        return;
+      }
+
+      try {
         // Force multiple recalculation methods for consistency
-        if (scrollerRef.value.forceUpdate) {
+        if (typeof scrollerRef.value.forceUpdate === 'function') {
           console.log('✅ Calling forceUpdate() on virtual scroller');
           scrollerRef.value.forceUpdate();
         }
 
-        if (scrollerRef.value.updateVisibleItems) {
+        if (typeof scrollerRef.value.updateVisibleItems === 'function') {
           console.log('🔄 Calling updateVisibleItems()');
           scrollerRef.value.updateVisibleItems(true);
         }
@@ -186,32 +205,42 @@ export default {
             scrollerRef.value.forceUpdate();
           }
         }, 200);
-      } else {
-        console.error('❌ scrollerRef is not available');
+        
+        console.log('✅ Recalculation methods called successfully');
+        
+      } catch (error) {
+        console.error('❌ Error during recalculation:', error);
       }
 
       console.log('✨ Recalculation complete');
     };
 
     onMounted(() => {
-      // Wait for WeWeb's CSS variables to be fully resolved
-      const waitForWeWebReady = () => {
-        const testEl = document.createElement('div');
-        testEl.style.fontFamily = 'var(--ww-default-font-family)';
-        document.body.appendChild(testEl);
-
-        const computedFont = window.getComputedStyle(testEl).fontFamily;
-        document.body.removeChild(testEl);
-
-        // If CSS var resolved, WeWeb is ready
-        if (computedFont !== 'var(--ww-default-font-family)') {
-          setTimeout(forceRecalculation, 100);
+      console.log('🚀 Component mounted, waiting for DynamicScroller to be ready');
+      
+      // Wait for DynamicScroller to be properly mounted and accessible
+      const waitForScroller = () => {
+        if (scrollerRef.value) {
+          console.log('✅ DynamicScroller found, initializing...');
+          
+          // Single controlled recalculation after scroller is ready
+          setTimeout(() => {
+            forceRecalculation();
+          }, 100);
+          
+          // One more recalculation after CSS/fonts are settled
+          setTimeout(() => {
+            forceRecalculation();
+          }, 1000);
+          
         } else {
-          setTimeout(waitForWeWebReady, 50);
+          console.log('⏳ Waiting for DynamicScroller...');
+          setTimeout(waitForScroller, 50);
         }
       };
-
-      waitForWeWebReady();
+      
+      // Start waiting for scroller after next tick
+      nextTick(waitForScroller);
     });
 
     return {

@@ -38,9 +38,12 @@ export default {
         en: "Items",
         fr: "Items",
       },
-      type: "Info",
+      type: "Array",
       options: {
-        text: { en: "Elements to repeat" },
+        item: {
+          type: "Object",
+          defaultValue: {},
+        },
       },
       hidden: (content, sidePanelContent, boundProps, wwProps) =>
         !!(wwProps && wwProps.isFixed),
