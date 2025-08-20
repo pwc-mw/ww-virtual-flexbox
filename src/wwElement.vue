@@ -5,7 +5,7 @@
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
     :key="children.length"
-    style="border: 1px solid green"
+    style="border: 1px solid red"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
@@ -113,7 +113,7 @@ export default {
         } else {
           optionProperties.value = {};
         }
-        
+
         // Recalculate virtual scroller when children change
         if (scrollerRef.value) {
           console.log('📱 Children changed, recalculating virtual scroller...');
@@ -179,7 +179,9 @@ export default {
         console.warn('⚠️ scrollerRef not available, scheduling retry...');
         setTimeout(() => {
           if (scrollerRef.value) {
-            console.log('🔄 Retrying recalculation after scrollerRef became available');
+            console.log(
+              '🔄 Retrying recalculation after scrollerRef became available'
+            );
             forceRecalculation();
           }
         }, 100);
@@ -205,9 +207,8 @@ export default {
             scrollerRef.value.forceUpdate();
           }
         }, 200);
-        
+
         console.log('✅ Recalculation methods called successfully');
-        
       } catch (error) {
         console.error('❌ Error during recalculation:', error);
       }
@@ -216,29 +217,30 @@ export default {
     };
 
     onMounted(() => {
-      console.log('🚀 Component mounted, waiting for DynamicScroller to be ready');
-      
+      console.log(
+        '🚀 Component mounted, waiting for DynamicScroller to be ready'
+      );
+
       // Wait for DynamicScroller to be properly mounted and accessible
       const waitForScroller = () => {
         if (scrollerRef.value) {
           console.log('✅ DynamicScroller found, initializing...');
-          
+
           // Single controlled recalculation after scroller is ready
           setTimeout(() => {
             forceRecalculation();
           }, 100);
-          
+
           // One more recalculation after CSS/fonts are settled
           setTimeout(() => {
             forceRecalculation();
           }, 1000);
-          
         } else {
           console.log('⏳ Waiting for DynamicScroller...');
           setTimeout(waitForScroller, 50);
         }
       };
-      
+
       // Start waiting for scroller after next tick
       nextTick(waitForScroller);
     });
