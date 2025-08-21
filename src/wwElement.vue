@@ -203,9 +203,7 @@ export default {
 };
 </script>
 
-<style scoped>
-@import 'vue-virtual-scroller/dist/vue-virtual-scroller.css';
-
+<style>
 .-link {
   cursor: pointer;
 }

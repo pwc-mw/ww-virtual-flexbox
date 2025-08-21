@@ -2,14 +2,15 @@
   "name": "virtual-scroll-flexbox",
   "version": "0.0.8",
   "scripts": {
-    "build": "weweb build",
-    "serve": "weweb serve"
+    "build": "npm run inject-css && weweb build",
+    "serve": "weweb serve",
+    "inject-css": "node scripts/inject-css.js"
   },
   "devDependencies": {
     "@weweb/cli": "latest"
   },
   "dependencies": {
     "@vueuse/core": "^11.1.0",
-    "vue-virtual-scroller": "^2.0.0-beta.8"
+    "vue-virtual-scroller": "2.0.0-beta.8"
   }
 }
