@@ -5,7 +5,6 @@
     :min-item-size="virtualScrollMinItemSize"
     :buffer="virtualScrollBuffer"
     :key="`scroller-${children.length}`"
-    style="border: 1px solid black"
   >
     <template v-slot="{ item, index, active }">
       <DynamicScrollerItem
